@@ -1,65 +1,87 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import React, {Component} from "react";
+import ReactDOM from 'react-dom';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+import Link from 'next/link';
+import useSWR from "swr";
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+export default class Home extends Component {
+    constructor(props) {
+        super(props);
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        this.state = {
+            username: '',
+            password: '',
+        }
+    }
+    async getServerSideProps(username, password) {
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        const url =`http://localhost:8000/authentication?`+
+            'username=' + username + '&'+
+            'password=' + password;
+        console.log(url);
+        let res = await fetch(url,
+            {
+                method:"GET",
+                headers: {
+                    "content-type": "application/json",
+                }
+            })
+            .then(response => response.text().then(function(text) {
+                return text ? console.log(JSON.parse(text)) : console.log('nope');
+            }));
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+    }
+    async handleOnClick(event) {
+        let res = await this.getServerSideProps(this.state.username, this.state.password);
+        //console.log("username: " + this.state.username);
+        //console.log("password: " + this.state.password);
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+    }
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+    handleOnChange(event) {
+        const target = event.target;
+        const name = target.name;
+        this.setState({
+            [name]: target.value,
+        });
+    }
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+
+
+    render() {
+        return (
+            <div>
+                <Head>
+                    <title>Log In</title>
+                </Head>
+                <main className={styles.main}>
+                    <div className={styles.loginContainer}>
+                        <div id="Log In Container" className={styles.login}>
+
+                            <div className={styles.verticalContainer}>
+                                <div onChange={(e) => this.handleOnChange(e)}>
+                                    <div className={styles.username}>
+                                        <TextField id="outlined-basic" name="username" label="Username" variant="outlined" />
+                                    </div>
+                                    <div>
+                                        <TextField id="outlined-basic" name="password" label="Password" variant="outlined"/>
+                                    </div>
+                                </div>
+                                <div className={styles.logInButton} onClick={(e) => this.handleOnClick(e)}>
+                                    <Button size="large" variant="contained" color="primary">
+                                        Log In
+                                    </Button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 }
